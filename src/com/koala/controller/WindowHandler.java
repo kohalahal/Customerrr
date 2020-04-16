@@ -17,6 +17,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 import com.koala.dao.Dao;
 import com.koala.view.Window;
@@ -38,7 +39,7 @@ public class WindowHandler implements ActionListener, ItemListener, KeyListener,
 	public static void main(String[] args) {
 		WindowHandler h = new WindowHandler();
 		Window window = new Window();
-		window.addWindowHandler(h);
+		//window.addWindowHandler(h);
 		Dao d = new Dao();
 		Vector<Vector<Object>> v = d.getList();
 		Scanner sc = new Scanner(System.in);
@@ -148,14 +149,14 @@ public class WindowHandler implements ActionListener, ItemListener, KeyListener,
 	//불린체크박스
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-
+		window.tableField.table.
 	}
 	
 	//테이블 선택
 	@Override
 	public void tableChanged(TableModelEvent e) {
-		// TODO Auto-generated method stub
 		
+
 	}
 
 

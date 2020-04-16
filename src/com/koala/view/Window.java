@@ -6,8 +6,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import com.koala.controller.WindowHandler;
+import com.koala.controller.EventListener;
 import com.koala.dao.Customer;
 
 
@@ -27,7 +26,7 @@ public class Window extends JFrame {
 		hotelName = "HOTEL KOALA";
 		appName = "고객 관리 시스템";
 		
-		setBounds(100, 100, 1280, 450);
+		setBounds(100, 100, 1280, 458);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setName(appName);
 		frame = (JPanel) getContentPane();
@@ -54,36 +53,41 @@ public class Window extends JFrame {
 		inputField.setBounds(10, 110, 295, 300);
 		frame.add(inputField);
 		tableField = new TableField();
+		tableField.sortView.setBounds(759, 5, 169, 23);
 		tableField.setBounds(315, 10, 940, 400);
 		frame.add(tableField);
 		
 		setVisible(true);
 	}
 	
+	public Window(EventListener l) {
+		this();
+		addListener(l);
+	}
+	
 	public static void main(String[] args) {
 		new Window();
 	}
 	
-	public void addWindowHandler(WindowHandler w) {
-		inputField.addListener(w);
-		tableField.addListener(w);
-	}
+//	public void addWindowHandler(WindowHandler w) {
+//		//inputField.addListener(w);
+//		tableField.addListener(w);
+//	}
 	
-	private Boolean ask(String s) {
-		//dialogue
+	public void addListener(EventListener l) {
+		tableField.addListener(l);
+		inputField.addListener(l);
 	}
-	
+
 //input field
-	private Customer getNewData() {
+	public Customer getInputData() {
 		// TODO Auto-generated method stub
-		if(ask("저장")) return inputField.getData();
-		else return null;
+		return inputField.getData();
 	}
 	
-	private Customer editData() {
+	public int getLoadedDataId() {
 		// TODO Auto-generated method stub
-		if(ask("수정"))  return inputField.getData();
-		else return null;
+		return 0;
 	}
 	
 	private void removeData() {
