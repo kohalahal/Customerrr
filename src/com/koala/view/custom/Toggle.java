@@ -25,10 +25,15 @@ public class Toggle extends JToggleButton {
 		status = false;
 	}
 	
+	public Toggle(String s) {
+		this();
+		set(s, s);
+	}
+	
 	@Override
 	public Insets getMargin() {
 		// TODO Auto-generated method stub
-		return new Insets(10,10,10,10);
+		return new Insets(1,1,1,1);
 	}
 	
 	public Boolean getStatus() {
@@ -40,23 +45,24 @@ public class Toggle extends JToggleButton {
 		setSelected(false);
     	setBackground(lightGray);
     	setForeground(Color.WHITE);
-		setUI(new MetalToggleButtonUI() {
+    	MetalToggleButtonUI ui = new MetalToggleButtonUI() {
 			
 		    @Override
 		    protected Color getSelectColor() {
 		        return orange;
 		    }
-		});
+		};
+		setUI(ui);
 		addItemListener(new ItemListener() {
 		    @Override
 		    public void itemStateChanged(ItemEvent e) {
 		        if (e.getStateChange() == ItemEvent.SELECTED) {
-		        	setText(s1);
+		        	setText(s2);
 		        	setForeground(Color.BLACK);
 		        	status = true;
 		        } else {
-		        	setText(s2);
-		        	setForeground(Color.RED);
+		        	setText(s1);
+		        	setForeground(Color.WHITE);
 		        	status = false;
 		        }
 		    }
@@ -71,5 +77,8 @@ public class Toggle extends JToggleButton {
 		this.name = name;
 	}
 	
-	
+	public void setStatus(Boolean b) {
+		status = b;
+		setSelected(b);
+	}
 }

@@ -1,10 +1,15 @@
 package com.koala.dao;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Vector;
 
 import org.json.JSONArray;
@@ -37,49 +42,65 @@ public class Dao {
 	
 	public static void main(String[] args) {
 		Dao d = new Dao();
-		Customer a = new Customer(0, true, true, true, "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
-		Customer b = new Customer(1, true, true, true, "44", "55", "66", "77", "88", "99","10", "12", "13", "14");
-		Customer c = new Customer(1, true, true, true, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11");
-		System.out.println(d.list==null);
-		d.synchDB();
+		d.getList();
 	}
-	
 	
 	//자료 조작 : 리스트에, 디비에, 그리고 리스트 리턴
-	public Vector<Vector<Object>> addCustomer(Customer c) {
+	public Vector<Vector<Object>> addCustomer(Vector<Object> c) {
 		int i = getCustomerIdx(c);
 		if(i!=-1) { //중복 자료이면
+			System.out.println("중복자료 저장안됨");
 			return null;
 		}
-		c.set(0, id++);
-		list.add(c);
-		synchDB();
-		return getList();
-	}
-	public Vector<Vector<Object>> editCustomer(Customer before, Customer after) { //커스터머 비포에 id정보가 뭐가담겨있남?ㄴㄴ
-		int i = getCustomerIdx(before);
-		if(i==-1) { //중복 정보가 있으면
-			return null;
+		Customer add = vToC(c);
+		add.set(0, id++);
+		list.add(add);
+		try {
+			exportDB();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		after.set(0, list.get(i).get(0));
-		list.set(i, after);
-		synchDB();
 		return getList();
 	}
-	public Vector<Vector<Object>> removeCustomer(Customer c) {
+
+	public Vector<Vector<Object>> editCustomer(Vector<Object> c) { 
+		int idx = getCustomerIdx((Integer)c.get(0));
+		if(idx==-1) {
+			System.out.println("수정할 원본 고객 정보 찾지 못함");
+			return null;
+		} else {
+		System.out.println("고객 수정일어남 idx:"+idx+"c:"+c.toString());
+		list.set(idx, vToC(c));
+		try {
+			exportDB();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return getList();
+		}
+	}
+
+	public Vector<Vector<Object>> removeCustomer(Vector<Object> c) {
 		int i = getCustomerIdx(c);
 		if(i==-1) { //없으면
 			return null;
 		}
 		list.remove(i);
-		synchDB();
+		try {
+			exportDB();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return getList();
 	}
 	
 	
 	
 	
-	private int getCustomerIdx(Customer c) {
+	private int getCustomerIdx(Vector<Object> c) {
 		int i = -1;
 		if(list.size()>0) {
 			for(Customer v:list) {
@@ -87,84 +108,107 @@ public class Dao {
 						v.get(4).equals(c.get(4)) && v.get(5).equals(c.get(5)) && v.get(6).equals(c.get(6)) &&
 						v.get(7).equals(c.get(7)) && v.get(8).equals(c.get(8)) && v.get(9).equals(c.get(9)) &&
 						v.get(10).equals(c.get(10)) && v.get(11).equals(c.get(11)) && v.get(12).equals(c.get(12)) &&
-						v.get(13).equals(c.get(13)) && v.get(14).equals(c.get(14)) ) {
+						v.get(13).equals(c.get(13)) && v.get(14).equals(c.get(14)) && 
+						v.get(15).equals(c.get(15)) && v.get(16).equals(c.get(16)) ) {
 					i = list.indexOf(v);
+					break;
+				}
+			}
+		}
+		return i;
+	}
+	
+	private int getCustomerIdx(int id) {
+		int i = -1;
+		if(list.size()>0) {
+			for(Customer v:list) {
+				if( v.get(0).equals(Integer.valueOf(id))) {
+					i = list.indexOf(v);
+					break;
 				}
 			}
 		}
 		return i;
 	}
 		
+	public static <T extends Serializable> T deepCopyOfSerializable(T o) throws Exception
+	{
+	    if (o == null)
+	        return null;
+
+	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+	    oos.writeObject(o);
+	    bos.close();
+	    oos.close();
+
+	    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+	    ObjectInputStream ois = new ObjectInputStream(bis);
+
+	    T t = (T) ois.readObject();
+	    bis.close();
+	    ois.close();
+	    return t;
+	}
+	
 	public Vector<Vector<Object>> getList() {
 		try {
-			return JarrToV(vCToJarr(list));
-		} catch (JSONException e) {
+			Vector<Customer> tmp =  deepCopyOfSerializable(list);
+			System.out.println(tmp.hashCode());
+			System.out.println(list.hashCode());
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
 		}
-
+		return null;
 		
 	}
 	
-	private void synchDB() {
+	private void synchDB() { //초기 씽크		
 		try {			
 			FileReader reader = new FileReader(DBFile);
 			JSONTokener tokener = new JSONTokener(reader);
 			try {	
-		    JSONArray jArr = new JSONArray(tokener);
-		    reader.close();
-		   //db가 안비었으면 비교, 리스트 우대
-		    	if(list==null) {
-		    		list = JarrToVC(jArr);
-		    		System.out.println("리스트에 DB 받아옴");
-		    	} else {
-		    		if(JarrToVC(jArr).size()==list.size()) {
-		    			
-		    		} else {
-		    			System.out.println("DB와 리스트 불일치");
-		    			exportDB();
-		    		}		    		
-		    	}
-		
-			   System.out.println("리스트:"+list.toString());
-			   for(Customer c:list) {
-				   if( (int)(c.get(0)) > id) id=(int)c.get(0)+1;
-			   }
+			    JSONArray jArr = new JSONArray(tokener);
+			    reader.close();
+			    list = JarrToVC(jArr);
+			    System.out.println("리스트에 DB 받아옴");	
+			    if(list==null||list.size()<1) {
+		    		list = new Vector<Customer>();
+		    		System.out.println("빈 리스트 생성");
+			    }		    
+				for(int i = 0; i < list.size(); i++) {
+					if( (int)(list.get(i).get(0)) >= id) {
+						//S//ystem.out.println("id보다큰 리스트id:"+(int)list.get(i).get(0));
+						id=(int)list.get(i).get(0)+1;
+						//i = -1;
+					}
+				}
+				System.out.println("설정된 초기 id값:"+id);
 			} catch (IOException | JSONException  e) {
 				// TODO Auto-generated catch block
-			    //e.printStackTrace();
-			    System.out.println("DB 정보 없음");
-			    if(list==null) {
-		    		list = new Vector<Customer>();
-		    		System.out.println("빈 리스트");
-		    	} else {
-		    		try {
-						exportDB();
-					} catch (JSONException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-		    	}
-
-			}		
+			//e.printStackTrace();
+			System.out.println("DB 정보 없음");
+			list = new Vector<Customer>();
+    		System.out.println("빈 리스트 생성");
+			}			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-		    //e.printStackTrace();
-		    System.out.println("DB 파일 없음");
+		// TODO Auto-generated catch block
+	    //e.printStackTrace();
+	    System.out.println("DB 파일 없음");
 		} 
-		
+		System.out.println("씽크끝"+list.toString());
 	}
 
 	public void exportDB() throws JSONException {
 		try {
-			FileWriter writer = new FileWriter(DBFile);
-			System.out.println(list.toString());
-			System.out.println(vCToJarr(list).toString());
+			FileWriter writer = new FileWriter(DBFile);			
+			System.out.println("DB로 나가는 리스트:"+list.toString());
 			writer.write(vCToJarr(list).toString());
 			writer.flush();
 			writer.close();
-			System.out.println("리스트를 DB로 내보냄");
+			System.out.println("갱신된 리스트를 DB로 내보냄");
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -172,6 +216,13 @@ public class Dao {
 		}
 	}
 	
+	private Customer vToC(Vector<Object> c) {
+		// TODO Auto-generated method stub
+		return new Customer (0, (Boolean)c.get(1), (Boolean)c.get(2), (Boolean)c.get(3), (Boolean)c.get(4),
+				(String)c.get(5), (String)c.get(6), (String)c.get(7), (String)c.get(8), 
+				(String)c.get(9), (String)c.get(10), (String)c.get(11), (String)c.get(12),	
+				(String)c.get(13), (String)c.get(14), (String)c.get(15), (Double)c.get(16));
+	}
 	
 	public JSONObject cToJ(Customer c) {
 		if(c.get(0)!=null) {
@@ -188,14 +239,15 @@ public class Dao {
 			}
 			return tmp;
 		}
-		return null;
+		return new JSONArray();
 	}
 	public Customer jToC(JSONObject j) throws JSONException {
-		return new Customer( j.getInt("id"),  j.getBoolean("booked"), j.getBoolean("checkedIn"), j.getBoolean("checkedOut"),
+		return new Customer( j.getInt("id"),  
+				j.getBoolean("booked"), j.getBoolean("checkedIn"), j.getBoolean("checkedOut"), j.getBoolean("payed"),
 				j.getString("dayIn"), j.getString("dayOut"), j.getString("title"), j.getString("name"), 
 				j.getString("nation"), j.getString("passport"),
 				j.getString("roomType"), j.getString("roomNo"),
-				j.getString("email"), j.getString("phone"), j.getString("request"));
+				j.getString("email"), j.getString("phone"), j.getString("request"), j.getDouble("price"));
 	}
 	public Vector<Customer> JarrToVC(JSONArray arr) throws JSONException {
 		Vector<Customer> tmp = new Vector<Customer>();
@@ -213,18 +265,19 @@ public class Dao {
 		tmp.put("booked", v.get(1));
 		tmp.put("checkedIn", v.get(2));
 		tmp.put("checkedOut", v.get(3));
-		tmp.put("dayIn", v.get(4));
-		tmp.put("dayOut", v.get(5));
-		tmp.put("title", v.get(6));
-		tmp.put("name", v.get(7));
-		tmp.put("nation", v.get(8));
-		tmp.put("passport", v.get(9));
-		tmp.put("roomType", v.get(10));
-		if(v.get(11)!=null) tmp.put("roomNo", v.get(11));
-		else tmp.put("roomNo", "");
-		tmp.put("email", v.get(12));
-		tmp.put("phone", v.get(13));
-		tmp.put("request", v.get(14));
+		tmp.put("payed", v.get(4));
+		tmp.put("dayIn", v.get(5));
+		tmp.put("dayOut", v.get(6));
+		tmp.put("title", v.get(7));
+		tmp.put("name", v.get(8));
+		tmp.put("nation", v.get(9));
+		tmp.put("passport", v.get(10));
+		tmp.put("roomType", v.get(11));
+		tmp.put("roomNo", v.get(12));
+		tmp.put("email", v.get(13));
+		tmp.put("phone", v.get(14));
+		tmp.put("request", v.get(15));
+		tmp.put("price", v.get(16));
 		return tmp;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -243,36 +296,23 @@ public class Dao {
 	}	
 	public Vector<Object> jToV(JSONObject j) throws JSONException {
 		Vector<Object> tmp = new Vector<Object>();
-		if(j.has("id")) tmp.add(j.getInt("id"));
-		else tmp.add(Integer.valueOf(0));
-		if(j.has("booked")) tmp.add(j.getBoolean("booked"));
-		else tmp.add(Boolean.FALSE);
-		if(j.has("staying")) tmp.add(j.getBoolean("staying"));
-		else tmp.add(Boolean.FALSE);
-		if(j.has("checkOut"))tmp.add(j.getBoolean("checkOut"));
-		else tmp.add(Boolean.FALSE);
-		if(j.has("bookIn")) tmp.add(j.getString("bookIn"));
-		else tmp.add("10/10/10 10:10");
-		if(j.has("bookOut")) tmp.add(j.getString("bookOut"));
-		else tmp.add("10/10/10 10:10");
-		if(j.has("title")) tmp.add(j.getString("title"));
-		else tmp.add("");
-		if(j.has("name")) tmp.add(j.getString("name"));
-		else tmp.add("");
-		if(j.has("nation")) tmp.add(j.getString("nation"));
-		else tmp.add("");
-		if(j.has("passport")) tmp.add(j.getString("passport"));
-		else tmp.add("");
-		if(j.has("roomType")) tmp.add(j.getString("roomType"));
-		else tmp.add("");
-		if(j.has("roomNo")) tmp.add(j.getString("roomNo"));
-		else tmp.add("");
-		if(j.has("email")) tmp.add(j.getString("email"));
-		else tmp.add("");
-		if(j.has("phone")) tmp.add(j.getString("phone"));
-		else tmp.add("");
-		if(j.has("request")) tmp.add(j.getString("request"));
-		else tmp.add("");
+		tmp.add(j.getInt("id"));
+		tmp.add(j.getBoolean("booked"));
+		tmp.add(j.getBoolean("checkedIn"));
+		tmp.add(j.getBoolean("checkedOut"));
+		tmp.add(j.getBoolean("payed"));
+		tmp.add(j.getString("dayIn"));
+		tmp.add(j.getString("dayOut"));
+		tmp.add(j.getString("title"));
+		tmp.add(j.getString("name"));
+		tmp.add(j.getString("nation"));
+		tmp.add(j.getString("passport"));
+		tmp.add(j.getString("roomType"));
+		tmp.add(j.getString("roomNo"));
+		tmp.add(j.getString("email"));
+		tmp.add(j.getString("phone"));
+		tmp.add(j.getString("request"));
+		tmp.add(j.getDouble("price"));
 		return tmp;		
 	}
 	public Vector<Vector<Object>> JarrToV(JSONArray arr) throws JSONException {

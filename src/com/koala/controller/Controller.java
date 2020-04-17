@@ -13,31 +13,48 @@ public class Controller implements EventListener {
 	public Controller() {
 		window = new Window(this);
 		dao = new Dao();
-		
+		window.table.initiateList(dao.getList());
 	}
 	
 	public static void main(String[] args) {
-		
 		new Controller();
 	}
-
+	
 	@Override
-	public void addData() {
+	public void refreshList() {
 		// TODO Auto-generated method stub
-		System.out.println("컽느롤러 애드");
+		System.out.println("테이블이니이시에잇");
+		window.table.initiateList(dao.getList());
 	}
 
 	@Override
-	public void editData() {
+	public void addData(Vector<Object> c) {
 		// TODO Auto-generated method stub
-		System.out.println("컽느롤러 에딧");
-
+		System.out.println("테이블이니이시에잇");
+		window.table.initiateList(dao.addCustomer(c));
 	}
 
 	@Override
-	public void removeData() {
+	public void editData(Vector<Object> c) {
 		// TODO Auto-generated method stub
-		System.out.println("컽느롤러 리무브");
+		System.out.println("테이블이니이시에잇");
+		window.table.initiateList(dao.editCustomer(c));
+
+	}
+	
+	@Override
+	public void editDataStatus(Vector<Object> c) {
+		// TODO Auto-generated method stub
+		System.out.println("수정만");
+		dao.editCustomer(c);
+	}
+
+
+	@Override
+	public void removeData(Vector<Object> c) {
+		// TODO Auto-generated method stub
+		System.out.println("테이블이니이시에잇");
+		window.table.initiateList(dao.removeCustomer(c));
 
 	}
 
@@ -54,5 +71,14 @@ public class Controller implements EventListener {
 		System.out.println("컽느롤러 체인치리스트");
 
 	}
+
+	@Override
+	public void selectData(Vector<Object> v) {
+		// TODO Auto-generated method stub
+		window.in.setData(v);
+	}
+
+	
+
 
 }

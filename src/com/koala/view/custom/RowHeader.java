@@ -1,10 +1,10 @@
 package com.koala.view.custom;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.beans.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.plaf.basic.BasicBorders.MarginBorder;
 import javax.swing.table.*;
  
 /*
@@ -12,11 +12,12 @@ import javax.swing.table.*;
  *  This table must be added to the row header of the scrollpane that
  *  contains the main table.
  */
-public class RowHeader extends JTable implements ChangeListener, PropertyChangeListener, TableModelListener {
+public class RowHeader extends JTable
+    implements ChangeListener, PropertyChangeListener, TableModelListener
+{
     private JTable main;
  
-    public RowHeader(JTable table)
-    {
+    public RowHeader(JTable table)    {
         main = table;
         main.addPropertyChangeListener( this );
         main.getModel().addTableModelListener( this );
@@ -31,7 +32,7 @@ public class RowHeader extends JTable implements ChangeListener, PropertyChangeL
         addColumn( column );
         column.setCellRenderer(new RowNumberRenderer());
  
-        getColumnModel().getColumn(0).setPreferredWidth(50);
+        getColumnModel().getColumn(0).setPreferredWidth(20);
         setPreferredScrollableViewportSize(getPreferredSize());
     }
  
@@ -149,6 +150,7 @@ public class RowHeader extends JTable implements ChangeListener, PropertyChangeL
         public RowNumberRenderer()
         {
             setHorizontalAlignment(JLabel.CENTER);
+            
         }
  
         public Component getTableCellRendererComponent(
@@ -163,6 +165,7 @@ public class RowHeader extends JTable implements ChangeListener, PropertyChangeL
                     setForeground(header.getForeground());
                     setBackground(header.getBackground());
                     setFont(header.getFont());
+                    setHorizontalTextPosition(CENTER);
                 }
             }
  
@@ -178,4 +181,3 @@ public class RowHeader extends JTable implements ChangeListener, PropertyChangeL
         }
     }
 }
- 

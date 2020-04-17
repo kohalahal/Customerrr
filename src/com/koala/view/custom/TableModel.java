@@ -15,11 +15,12 @@ public class TableModel extends AbstractTableModel implements Serializable {
     
     public TableModel() {
         dataVector = new Vector<Vector<Object>>();
-        columnIdentifiers = new Vector<String>(15); 
+        columnIdentifiers = new Vector<String>(17); 
         columnIdentifiers.addElement("i");
     	columnIdentifiers.addElement("예약");
     	columnIdentifiers.addElement("투숙");
     	columnIdentifiers.addElement("퇴실");
+    	columnIdentifiers.addElement("지불");
     	columnIdentifiers.addElement("입실일");
     	columnIdentifiers.addElement("퇴실일");
     	columnIdentifiers.addElement("호칭");
@@ -31,6 +32,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
     	columnIdentifiers.addElement("이메일");
     	columnIdentifiers.addElement("전화");
     	columnIdentifiers.addElement("요청");
+    	columnIdentifiers.addElement("가격");
     	fireTableStructureChanged();
     }
     
@@ -38,6 +40,33 @@ public class TableModel extends AbstractTableModel implements Serializable {
         this.dataVector = nonNullVector(dataVector);
         System.out.println("테이블바뀜"+dataVector.size());
         fireTableRowsInserted(0, this.dataVector.size());
+    }
+    
+    public Vector<Vector<Object>> adddataVector(Vector<Vector<Object>> dataVector) {
+    	int size = this.dataVector.size();
+        for(Vector<Object> v:dataVector) {
+        	this.dataVector.add(v);
+        }
+        System.out.println("테이블바뀜"+dataVector.size());
+        fireTableRowsInserted(size, this.dataVector.size());
+        return this.dataVector;
+    }
+    
+    public Vector<Vector<Object>> removedataVector(Vector<Vector<Object>> dataVector) {
+    	int size = this.dataVector.size();
+    	for(int i = 0; i<this.dataVector.size(); i++) {
+    		for(int j = 0; j<dataVector.size(); j++) {
+    			if(dataVector.get(j).equals(this.dataVector.get(i))) {
+    				System.out.println("지움"+this.dataVector.get(i));
+    				this.dataVector.remove(i);
+    				i = -1;
+    				break;
+    			}	
+    		}
+    	}
+        System.out.println("테이블바뀜"+this.dataVector.size());
+        fireTableRowsDeleted(size, this.dataVector.size());
+        return this.dataVector;
     }
 
     public void addRow(Vector<Object> rowData) {
@@ -49,6 +78,9 @@ public class TableModel extends AbstractTableModel implements Serializable {
 	}
 	public void removeRow(Vector<Object> v) {
 		removeRow(dataVector.indexOf(v));
+	}
+	public Vector<Object> getRow(int row) {
+		return dataVector.elementAt(row);
 	}
 	
     public void removeRow(int row) {
@@ -62,11 +94,12 @@ public class TableModel extends AbstractTableModel implements Serializable {
     }
 
 	public void clearAllRows() {
+		int row = dataVector.size();
 		while(getRowCount()>0)
 		{
 			removeRow(0);
-			fireTableRowsDeleted(0, 0);
 		}
+		fireTableRowsDeleted(0, row);
 	}   
 
 	public Object getValueAt(int row, int column) {
@@ -127,7 +160,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
         return dataVector.size();
     }
 	public boolean isCellEditable(int row, int column) {
-    	if(column==0||column==1||column==2) return true;
+    	if(column==4||column==1||column==2||column==3) return true;
     	else return false;
     }
 	private static Vector nonNullVector(Vector v) {
