@@ -58,7 +58,7 @@ public class Toggle extends JToggleButton {
 		    public void itemStateChanged(ItemEvent e) {
 		        if (e.getStateChange() == ItemEvent.SELECTED) {
 		        	setText(s2);
-		        	setForeground(Color.BLACK);
+		        	setForeground(new Color(13041721));
 		        	status = true;
 		        } else {
 		        	setText(s1);

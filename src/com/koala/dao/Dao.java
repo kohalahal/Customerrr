@@ -1,29 +1,25 @@
 package com.koala.dao;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Vector;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.koala.controller.EventListener;
+
 public class Dao {
 	private Vector<Customer> list;
+	EventListener listener;
 	String path;
 	File DBFile;
 	int id;
 	FileReader reader;
-	
 	
 	public Dao() {
 		path = "DB.json";
@@ -40,6 +36,11 @@ public class Dao {
 		synchDB();
 	}
 	
+	public Dao(EventListener l) {
+		this();
+		this.listener = l;
+	}
+	
 	public static void main(String[] args) {
 		Dao d = new Dao();
 		d.getList();
@@ -49,7 +50,8 @@ public class Dao {
 	public Vector<Vector<Object>> addCustomer(Vector<Object> c) {
 		int i = getCustomerIdx(c);
 		if(i!=-1) { //중복 자료이면
-			System.out.println("중복자료 저장안됨");
+			System.out.println("새로운 고객이 중복자료 저장안됨");
+			listener.dataError("똑같은 고객 정보가 이미 존재합니다.");
 			return null;
 		}
 		Customer add = vToC(c);
@@ -67,7 +69,7 @@ public class Dao {
 	public Vector<Vector<Object>> editCustomer(Vector<Object> c) { 
 		int idx = getCustomerIdx((Integer)c.get(0));
 		if(idx==-1) {
-			System.out.println("수정할 원본 고객 정보 찾지 못함");
+			listener.dataError("수정할 대상을 찾지 못했습니다.");
 			return null;
 		} else {
 		System.out.println("고객 수정일어남 idx:"+idx+"c:"+c.toString());
@@ -96,10 +98,7 @@ public class Dao {
 		}
 		return getList();
 	}
-	
-	
-	
-	
+		
 	private int getCustomerIdx(Vector<Object> c) {
 		int i = -1;
 		if(list.size()>0) {
@@ -109,7 +108,8 @@ public class Dao {
 						v.get(7).equals(c.get(7)) && v.get(8).equals(c.get(8)) && v.get(9).equals(c.get(9)) &&
 						v.get(10).equals(c.get(10)) && v.get(11).equals(c.get(11)) && v.get(12).equals(c.get(12)) &&
 						v.get(13).equals(c.get(13)) && v.get(14).equals(c.get(14)) && 
-						v.get(15).equals(c.get(15)) && v.get(16).equals(c.get(16)) ) {
+						v.get(15).equals(c.get(15)) && v.get(16).equals(c.get(16))&& 
+						v.get(17).equals(c.get(17)) && v.get(18).equals(c.get(18)) ) {
 					i = list.indexOf(v);
 					break;
 				}
@@ -131,38 +131,12 @@ public class Dao {
 		return i;
 	}
 		
-	public static <T extends Serializable> T deepCopyOfSerializable(T o) throws Exception
-	{
-	    if (o == null)
-	        return null;
-
-	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	    ObjectOutputStream oos = new ObjectOutputStream(bos);
-
-	    oos.writeObject(o);
-	    bos.close();
-	    oos.close();
-
-	    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-	    ObjectInputStream ois = new ObjectInputStream(bis);
-
-	    T t = (T) ois.readObject();
-	    bis.close();
-	    ois.close();
-	    return t;
-	}
-	
 	public Vector<Vector<Object>> getList() {
-		try {
-			Vector<Customer> tmp =  deepCopyOfSerializable(list);
-			System.out.println(tmp.hashCode());
-			System.out.println(list.hashCode());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Vector<Vector<Object>> tmp = new Vector<Vector<Object>>();
+		for(Customer c:list) {
+			tmp.add(c);
 		}
-		return null;
-		
+		return tmp;
 	}
 	
 	private void synchDB() { //초기 씽크		
@@ -172,7 +146,7 @@ public class Dao {
 			try {	
 			    JSONArray jArr = new JSONArray(tokener);
 			    reader.close();
-			    list = JarrToVC(jArr);
+			    list = JarrToVc(jArr);
 			    System.out.println("리스트에 DB 받아옴");	
 			    if(list==null||list.size()<1) {
 		    		list = new Vector<Customer>();
@@ -218,20 +192,21 @@ public class Dao {
 	
 	private Customer vToC(Vector<Object> c) {
 		// TODO Auto-generated method stub
-		return new Customer (0, (Boolean)c.get(1), (Boolean)c.get(2), (Boolean)c.get(3), (Boolean)c.get(4),
-				(String)c.get(5), (String)c.get(6), (String)c.get(7), (String)c.get(8), 
+		return new Customer ((Integer)c.get(0), (Boolean)c.get(1), (Boolean)c.get(2), (Boolean)c.get(3),
+				(String)c.get(4), (String)c.get(5), (Integer)c.get(6), (String)c.get(7), (String)c.get(8), 
 				(String)c.get(9), (String)c.get(10), (String)c.get(11), (String)c.get(12),	
-				(String)c.get(13), (String)c.get(14), (String)c.get(15), (Double)c.get(16));
+				(String)c.get(13), (String)c.get(14), (String)c.get(15), (Double)c.get(16), (Boolean)c.get(17));
 	}
-	
-	public JSONObject cToJ(Customer c) {
-		if(c.get(0)!=null) {
-			Vector<Object> tmp = c;
-			return vToJ(c);
+	public Vector<Customer> JarrToVc(JSONArray arr) throws JSONException {
+		Vector<Customer> tmp = new Vector<Customer>();
+		if(arr!=null) {
+			for(int i = 0; i < arr.length(); i++) {
+				tmp.add(jToC(arr.getJSONObject(i)));
+			}
 		}
-		return null;
+		return tmp;
 	}
-	public JSONArray vCToJarr(Vector<Customer> v) {
+	public JSONArray vCToJarr(Vector<Customer> v) throws JSONException {
 		if(v.size()>0) {
 			JSONArray tmp = new JSONArray();
 			for(Customer c:v) {
@@ -241,87 +216,38 @@ public class Dao {
 		}
 		return new JSONArray();
 	}
-	public Customer jToC(JSONObject j) throws JSONException {
-		return new Customer( j.getInt("id"),  
-				j.getBoolean("booked"), j.getBoolean("checkedIn"), j.getBoolean("checkedOut"), j.getBoolean("payed"),
-				j.getString("dayIn"), j.getString("dayOut"), j.getString("title"), j.getString("name"), 
-				j.getString("nation"), j.getString("passport"),
-				j.getString("roomType"), j.getString("roomNo"),
-				j.getString("email"), j.getString("phone"), j.getString("request"), j.getDouble("price"));
-	}
-	public Vector<Customer> JarrToVC(JSONArray arr) throws JSONException {
-		Vector<Customer> tmp = new Vector<Customer>();
-		if(arr!=null) {
-			for(int i = 0; i < arr.length(); i++) {
-				tmp.add(jToC(arr.getJSONObject(i)));
-			}
-		}
-		return tmp;
-	}
-	static JSONObject vToJ(Vector<Object> v) {
-		try {
-		JSONObject tmp = new JSONObject();
-		tmp.put("id", v.get(0));
-		tmp.put("booked", v.get(1));
-		tmp.put("checkedIn", v.get(2));
-		tmp.put("checkedOut", v.get(3));
-		tmp.put("payed", v.get(4));
-		tmp.put("dayIn", v.get(5));
-		tmp.put("dayOut", v.get(6));
-		tmp.put("title", v.get(7));
-		tmp.put("name", v.get(8));
-		tmp.put("nation", v.get(9));
-		tmp.put("passport", v.get(10));
-		tmp.put("roomType", v.get(11));
-		tmp.put("roomNo", v.get(12));
-		tmp.put("email", v.get(13));
-		tmp.put("phone", v.get(14));
-		tmp.put("request", v.get(15));
-		tmp.put("price", v.get(16));
-		return tmp;
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public JSONObject cToJ(Customer c) throws JSONException {
+		if(c.get(0)!=null) {
+			JSONObject tmp = new JSONObject();
+			tmp.put("id", c.get(0));
+			tmp.put("booked", c.get(1));
+			tmp.put("checkedIn", c.get(2));
+			tmp.put("checkedOut", c.get(3));
+			tmp.put("dayIn", c.get(4));
+			tmp.put("dayOut", c.get(5));
+			tmp.put("days", c.get(6));
+			tmp.put("title", c.get(7));
+			tmp.put("name", c.get(8));
+			tmp.put("nation", c.get(9));
+			tmp.put("passport", c.get(10));
+			tmp.put("roomType", c.get(11));
+			tmp.put("roomNo", c.get(12));
+			tmp.put("email", c.get(13));
+			tmp.put("phone", c.get(14));
+			tmp.put("request", c.get(15));
+			tmp.put("price", c.get(16));
+			tmp.put("payed", c.get(17));
+			return tmp;
 		}
 		return null;
 	}
-	public JSONArray vToJarr(Vector<Vector<Object>> v) throws JSONException {
-		JSONArray tmp = new JSONArray();
-		if(v!=null) {
-			for(Vector<Object> e:v) {
-				tmp.put(vToJ(e));
-			}
-		}
-		return tmp;
-	}	
-	public Vector<Object> jToV(JSONObject j) throws JSONException {
-		Vector<Object> tmp = new Vector<Object>();
-		tmp.add(j.getInt("id"));
-		tmp.add(j.getBoolean("booked"));
-		tmp.add(j.getBoolean("checkedIn"));
-		tmp.add(j.getBoolean("checkedOut"));
-		tmp.add(j.getBoolean("payed"));
-		tmp.add(j.getString("dayIn"));
-		tmp.add(j.getString("dayOut"));
-		tmp.add(j.getString("title"));
-		tmp.add(j.getString("name"));
-		tmp.add(j.getString("nation"));
-		tmp.add(j.getString("passport"));
-		tmp.add(j.getString("roomType"));
-		tmp.add(j.getString("roomNo"));
-		tmp.add(j.getString("email"));
-		tmp.add(j.getString("phone"));
-		tmp.add(j.getString("request"));
-		tmp.add(j.getDouble("price"));
-		return tmp;		
+	public Customer jToC(JSONObject j) throws JSONException {
+		return new Customer( j.getInt("id"),  
+				j.getBoolean("booked"), j.getBoolean("checkedIn"), j.getBoolean("checkedOut"),
+				j.getString("dayIn"), j.getString("dayOut"), j.getInt("days"), j.getString("title"), j.getString("name"), 
+				j.getString("nation"), j.getString("passport"),
+				j.getString("roomType"), j.getString("roomNo"),
+				j.getString("email"), j.getString("phone"), j.getString("request"), j.getDouble("price"),  j.getBoolean("payed"));
 	}
-	public Vector<Vector<Object>> JarrToV(JSONArray arr) throws JSONException {
-		Vector<Vector<Object>> tmp = new Vector<Vector<Object>>();
-		if(arr!=null) {
-			for(int i = 0; i < arr.length(); i++) {
-				tmp.add( jToV( (JSONObject)(arr.get(i)) ) );
-			}
-		}
-		return tmp;
-	}
+		
 }

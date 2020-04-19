@@ -12,6 +12,7 @@ public interface EventListener {
 	void changeDataList();
 	void refreshList();
 	void selectData(Vector<Object> v);
+	void dataError(String s);
 
 
 }

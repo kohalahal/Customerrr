@@ -1,4 +1,4 @@
-package com.koala.dao;
+package com.koala.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

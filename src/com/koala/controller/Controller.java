@@ -1,8 +1,6 @@
 package com.koala.controller;
 
-import java.util.Scanner;
 import java.util.Vector;
-
 import com.koala.dao.Dao;
 import com.koala.view.Window;
 
@@ -12,7 +10,7 @@ public class Controller implements EventListener {
 	
 	public Controller() {
 		window = new Window(this);
-		dao = new Dao();
+		dao = new Dao(this);
 		window.table.initiateList(dao.getList());
 	}
 	
@@ -47,6 +45,7 @@ public class Controller implements EventListener {
 		// TODO Auto-generated method stub
 		System.out.println("수정만");
 		dao.editCustomer(c);
+		window.in.clearAll();
 	}
 
 
@@ -76,6 +75,12 @@ public class Controller implements EventListener {
 	public void selectData(Vector<Object> v) {
 		// TODO Auto-generated method stub
 		window.in.setData(v);
+	}
+
+	@Override
+	public void dataError(String s) {
+		// TODO Auto-generated method stub
+		window.popUp("DB 오류 : "+s);
 	}
 
 	

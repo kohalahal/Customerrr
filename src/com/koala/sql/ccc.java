@@ -1,11 +1,16 @@
-package com.koala.sql;
+import java.io.ByteArrayInputStream;
 
-import org.h2.util.JdbcUtils;
+import java.io.File;
 
-public class ccc {
+import java.io.InputStream;
 
-	public ccc() {
-		JdbcUtils
-	}
-}
+import java.sql.Connection;
+
+import java.sql.DriverManager;
+
+import java.sql.PreparedStatement;
+
+import java.sql.ResultSet;
+
+import java.sql.SQLException;
 
