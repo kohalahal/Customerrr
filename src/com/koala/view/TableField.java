@@ -17,11 +17,22 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -37,10 +48,12 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.plaf.metal.MetalButtonUI;
 import javax.swing.table.TableColumnModel;
 import com.koala.controller.EventListener;
 import com.koala.dao.Dao;
 import com.koala.view.custom.Combo;
+import com.koala.view.custom.DateText;
 import com.koala.view.custom.RowHeader;
 import com.koala.view.custom.TableModel;
 import javax.swing.ImageIcon;
@@ -116,9 +129,14 @@ public class TableField extends JPanel {
 	}
 
 	public TableField() {
-		setBackground(Color.white);
+		//setBackground(Color.white);
+		setOpaque(false);
 		ref = new ImageIcon("c:/refresh.png");
 		table = new JTable() {
+			public boolean getScrollableTracksViewportWidth()
+            {
+                return getPreferredSize().width < getParent().getWidth();
+            }
 			@Override
 			public Class getColumnClass(int column) {
 				switch (column) {
@@ -142,11 +160,11 @@ public class TableField extends JPanel {
 		model = new TableModel();
 		table.setModel(model);
 		scroll = new JScrollPane(table);
-		sortString = new String [] {"입실일 내림차순", "입실일 오름차순","퇴실일 내립차순", "퇴실일 오름차순","고객 성함 순","고객 국적순", "객실 순", "호실 순"};
+		sortString = new String [] {"입실일 오름차순", "입실일 내림차순","퇴실일 오름차순", "퇴실일 내림차순","기간 순", "고객 성함 순","고객 국적순", "객실 순", "호실 순", "가격 순"};
 
 
 		String attComboPath = "attribute.txt";
-		setPreferredSize(new Dimension(1000,500));  
+		setPreferredSize(new Dimension(1000,550));  
 		orange = new Color(16753510);
 		deepOrange = new Color(16735283);
 		gray = new Color(14277081);
@@ -158,13 +176,15 @@ public class TableField extends JPanel {
 		topPanel.setPreferredSize(new Dimension(1000,50));
 		
 		tableTitlePanel = new JPanel();
-		tableTitlePanel.setBackground(orange);
-		tableTitlePanel.setPreferredSize(new Dimension(200,30));		
-		tableTitle = new JLabel("고객 정보 리스트");
-		tableTitle.setFont(new Font("한컴돋움", Font.BOLD, 18));
-		tableTitle.setPreferredSize(new Dimension(200,30));
+		tableTitlePanel.setOpaque(false);
+		tableTitlePanel.setPreferredSize(new Dimension(200,25));		
+		tableTitle = new JLabel("고 객  정 보  리 스 트");
+		Color pink = new Color(13041721);
+		tableTitle.setForeground(Color.white);
+		tableTitle.setFont(new Font("맑은 고딕", Font.BOLD, 20));
+		tableTitle.setPreferredSize(new Dimension(200,25));
 		tableTitle.setHorizontalAlignment(JLabel.CENTER);
-		tableTitle.setVerticalAlignment(JLabel.CENTER);
+		tableTitle.setBorder(BorderFactory.createEmptyBorder(5,0,0,0));
 		tableTitlePanel.add(tableTitle, BorderLayout.CENTER);
 		
 		tableSortPanel = new JPanel(new GridBagLayout());
@@ -172,12 +192,11 @@ public class TableField extends JPanel {
 		tableSortPanel.setOpaque(true);		
 		tableSortPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,20));
 		sortView = new Combo(sortString);		 
-		sortView.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 13));
 		sortView.setSize(200,30);
 		refreshBtn = new JButton();
-		refreshBtn.setFont(new Font("한컴산뜻돋움", Font.PLAIN, 10));
+		refreshBtn.setFont(new Font("맑은 고딕", Font.PLAIN, 10));
 		refreshBtn.setText("refresh");
-		ref = new ImageIcon("C:\\refresh.png");
+		ref = new ImageIcon("e:\\ref.png");
 		refreshBtn.setIcon(ref);
 		
 		gb = new GridBagConstraints();
@@ -194,7 +213,7 @@ public class TableField extends JPanel {
 		
 		topPanel.add(tableTitlePanel, BorderLayout.CENTER);
 		topPanel.add(tableSortPanel, BorderLayout.EAST);
-		
+		topPanel.setBackground(pink);
 		
 			
 		bottomPanel = new JPanel(new BorderLayout(40,40));
@@ -203,7 +222,8 @@ public class TableField extends JPanel {
 		
 		listChoicePanel = new JPanel(new GridBagLayout());
 		//listChoicePanel.setBounds(0, 425, 940, 25);
-		listChoicePanel.setBackground(gray);
+		//listChoicePanel.setBackground(orange);
+		listChoicePanel.setOpaque(false);
 		listChoicePanel.setPreferredSize(new Dimension(450,30));
 		
 		
@@ -213,7 +233,8 @@ public class TableField extends JPanel {
 		//status.setBackground(Color.gray);
 		status.setHorizontalAlignment(JLabel.CENTER);
 		status.setVerticalAlignment(JLabel.CENTER);
-		status.setOpaque(true);
+		status.setForeground(Color.white);
+		//status.setOpaque(true);
 		//status.setBounds(10, 2, 70, 20);
 		status.setPreferredSize(new Dimension(80,25));
 		listChoicePanel.add(status);
@@ -254,7 +275,13 @@ public class TableField extends JPanel {
 		cBoxPay.setSelected(true);
 		cBoxPay.setOpaque(false);
 		cBoxPay.addItemListener(cB);
-		
+		cBoxPay.setName("pay");
+		cAll.setForeground(Color.white);
+		cBoxBook.setForeground(Color.white);
+		cBoxIn.setForeground(Color.white);
+		cBoxOut.setForeground(Color.white);
+		cBoxPay.setForeground(Color.white);
+		cBoxCancel.setForeground(Color.white);
 		listChoicePanel.add(cAll);		
 		listChoicePanel.add(cBoxBook);
 		listChoicePanel.add(cBoxIn);
@@ -281,7 +308,7 @@ public class TableField extends JPanel {
 		
 		searchPanel = new JPanel(new GridBagLayout());
 		srcAtt = new Combo(attComboPath);
-		//srcAtt.setBounds(450, 2, 92, 21);
+		
 		searchPanel.add(srcAtt);
 		searchPanel.setPreferredSize(new Dimension(450,25));
 		srcAtt.setName("searchAtt");
@@ -290,14 +317,62 @@ public class TableField extends JPanel {
 		srcField.setPreferredSize(new Dimension(300,25));
 		//srcField.setBounds(552, 2, 255, 21);
 		
+		LineBorder line = new LineBorder(new Color(16753510), 1, true);
 		
-		srcField.setColumns(99999);		
+		
+		srcField.setColumns(99999);	
+		srcField.setBorder(line);
+		deepOrange = new Color(16735283);
+		LineBorder wline = new LineBorder(Color.white, 1, true);
+
+		MetalButtonUI btn = new MetalButtonUI() {			
+			@Override
+			public void uninstallDefaults(AbstractButton b) {
+				// TODO Auto-generated method stub
+				super.uninstallDefaults(b);						
+			}
+			@Override
+		    protected Color getSelectColor() {
+		        return pink;
+		    }			
+		};
+		MetalButtonUI btn2 = new MetalButtonUI() {			
+			@Override
+			public void uninstallDefaults(AbstractButton b) {
+				// TODO Auto-generated method stub
+				super.uninstallDefaults(b);				
+			}
+			@Override
+		    protected Color getSelectColor() {
+		        return Color.white;
+		    }			
+		};
 		srcBtn = new JButton("검 색");
 		//srcBtn.setBounds(812, 1, 67, 23);
 		srcBtn.setSize(67,23);
-		prevBtn = new JButton("이전");
+		srcBtn.setBorder(wline);
+		srcBtn.setBorder(BorderFactory.createEmptyBorder(5,20,5,20));
+		srcBtn.setBackground(deepOrange);
+		srcBtn.setForeground(Color.white);
+		srcBtn.setUI(btn);
+		srcBtn.setOpaque(true);
+		srcBtn.setFocusPainted(false);
+		prevBtn = new JButton("이 전");
+		prevBtn.setForeground(pink);
+		prevBtn.setBorder(wline);
+		prevBtn.setBorder(BorderFactory.createEmptyBorder(5,10,5,10));
+		prevBtn.setUI(btn2);
+		prevBtn.setFocusPainted(false);
+		prevBtn.setBackground(orange);
 		//prevBtn.setBounds(880, 1, 60, 23);
 		prevBtn.setSize(40,23);
+		refreshBtn.setUI(btn2);
+		refreshBtn.setFocusPainted(false);
+		refreshBtn.setBackground(orange);
+		refreshBtn.setBorder(wline);
+		refreshBtn.setForeground(pink);
+		refreshBtn.setBorder(BorderFactory.createEmptyBorder(2,10,2,10));
+		
 		
 	    gb.anchor = GridBagConstraints.WEST;
 	    gb.gridwidth = 2;
@@ -326,16 +401,15 @@ public class TableField extends JPanel {
 		bottomPanel.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		bottomPanel.add(listChoicePanel, BorderLayout.WEST);
 		bottomPanel.add(searchPanel, BorderLayout.EAST);
-
-		
-		setLayout(new BorderLayout(10,10));
+		//setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		setLayout(new BorderLayout(10,0));
 		add(topPanel, BorderLayout.NORTH);
 	
-
+		searchPanel.setOpaque(false);
 		add(scroll,BorderLayout.CENTER);
 		add(bottomPanel, BorderLayout.SOUTH);
-		topPanel.setBackground(Color.white);
-		bottomPanel.setBackground(Color.white);
+		topPanel.setBackground(pink);
+		bottomPanel.setBackground(pink);
 		tableSortPanel.setOpaque(false);
 		setOpaque(false);
 		
@@ -346,7 +420,7 @@ public class TableField extends JPanel {
 		sortView.setName("sortView");
 
 		check = new ButtonGroup();
-		check.add(cAll);
+		//check.add(cAll);
 		//check.add(cBoxBook);
 		//check.add(cBoxIn);
 		//check.add(cBoxOut);
@@ -357,8 +431,8 @@ public class TableField extends JPanel {
 		columnModel.getColumn(0).setPreferredWidth(30);
 		columnModel.getColumn(1).setPreferredWidth(30);
 		columnModel.getColumn(2).setPreferredWidth(30);
-		columnModel.getColumn(3).setPreferredWidth(105);
-		columnModel.getColumn(4).setPreferredWidth(105);
+		columnModel.getColumn(3).setPreferredWidth(115);
+		columnModel.getColumn(4).setPreferredWidth(115);
 		columnModel.getColumn(5).setPreferredWidth(30);
 		columnModel.getColumn(6).setPreferredWidth(30);
 		columnModel.getColumn(7).setPreferredWidth(80);
@@ -371,10 +445,8 @@ public class TableField extends JPanel {
 		columnModel.getColumn(14).setPreferredWidth(100);
 		columnModel.getColumn(15).setPreferredWidth(100);
 		columnModel.getColumn(16).setPreferredWidth(30);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		row = new RowHeader(table);
-		scroll.setRowHeaderView(row);
-		scroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, row.getTableHeader());	
+		//table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		
 		ActionListener a = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -406,6 +478,7 @@ public class TableField extends JPanel {
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				row.tableChanged(e);
+				//System.out.println("모델체인지드");
 				// TODO Auto-generated method stub
 				int row = e.getFirstRow();
 			    //System.out.println("로우"+row);
@@ -473,7 +546,20 @@ public class TableField extends JPanel {
 			}
 		};
 		model.addTableModelListener(t);
-		model.addTableModelListener(row);
+		
+		sortView.addItemListener(new ItemListener() {			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println(((Combo)e.getSource()).getSelectedItem());
+				sortList();
+			}
+		});
+		row = new RowHeader(table);
+		scroll.setRowHeaderView(row);
+		scroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, row.getTableHeader());	
+		table.addPropertyChangeListener(row);
+		
 	}
 	
 	public TableField(Vector<Vector<Object>> dataList) {
@@ -497,7 +583,6 @@ public class TableField extends JPanel {
 	public void removeRow() {
 		model.removeRow(table.getSelectedRow());
 	}
-	
 	
 	
 	//테이블 리스트 관리
@@ -608,8 +693,7 @@ public class TableField extends JPanel {
 	public void fullList() {
 		//System.out.println("온뷰 풀리스트");
 		onView = new Vector<Vector<Object>>(all);
-		model.clearAllRows();
-		model.setdataVector(onView);
+		sortList();
 	}
 	
 	public void initiateList(Vector<Vector<Object>> v) {
@@ -631,8 +715,13 @@ public class TableField extends JPanel {
 		for(Vector<Object> o:v) {
 			if(o.get(17).equals(Boolean.TRUE)) pay.add(o);
 		}
-		model.clearAllRows();
-		model.setdataVector(onView);	
+		sortList();	
+		System.out.println("all"+all);
+		System.out.println("book"+book);
+		System.out.println("in"+in);
+		System.out.println("out"+out);
+		System.out.println("cancel"+cancel);
+		System.out.println("pay"+pay);
 	}
 	
 	
@@ -657,32 +746,110 @@ public class TableField extends JPanel {
 			onView.add(v);
 		}
 		//System.out.println("애드후온뷰"+onView);
-		model.clearAllRows();
+		sortList();
 		//System.out.println("클리어후온뷰"+onView);
-		model.setdataVector(onView);
+
 	}
     
-	public void removeList(Vector<Vector<Object>> dataVector) {
-		for(int i = 0; i<onView.size(); i++) {
-			for(int j = 0; j<dataVector.size(); j++) {
-				if(dataVector.get(j).equals(onView.get(i))) {
-					System.out.println("지움"+dataVector.get(j));
-					onView.remove(i);
-				}	
+	public void removeList(Vector<Vector<Object>> dataVector) {		
+		Iterator<Vector<Object>> it = onView.iterator();
+		while(it.hasNext()) {
+			Vector<Object> o = it.next();
+			for(int i = 0; i<dataVector.size(); i++) {				
+				if(o.equals(dataVector.get(i))) {
+					it.remove();
+					break;
+				}
 			}
 		}
+		sortList();
+	}
+
+	private void sortList() {
+		System.out.println("sortList"+sortView.getSelectedIndex());
+		sort(sortView.getSelectedIndex(), onView);
+	//	System.out.println("솔트후"+onView);
 		model.clearAllRows();
 		model.setdataVector(onView);
 	}
+	
+	public void sort(int field, Vector<Vector<Object>> itemLocationList) {
+	//	System.out.println("솔트전"+onView);
+	    Collections.sort(itemLocationList, new Comparator<Vector<Object>>() {
+	        @Override
+	        public int compare(Vector<Object> a, Vector<Object> b) {
+	        	switch(field) {
+	    		case -1://입실내림오름
+	    			try {
+	    				//System.out.println("입실내림");
+	    				SimpleDateFormat form = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+	    				Date d = form.parse((String) a.get(4));
+	    				Date d2 = form.parse((String) b.get(4));
+	    				//System.out.println(d+"<>"+d2+":"+d.compareTo(d2));
+	    				return d.compareTo(d2);
+	    			} catch (ParseException e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    			}
+	    			 return 0;
+	    		case 1:
+    				try {
+	    				SimpleDateFormat form = new SimpleDateFormat("yyyy/MM/DD HH:mm");
+	    				Date d = form.parse((String) ((Vector)a).get(4));
+	    				Date d2 = form.parse((String) ((Vector) b).get(4));
+	    				return d2.compareTo(d);
+	    			} catch (ParseException e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    			}
+	    			 return 0;
+	    		case 2://퇴실내림오름
+	    			try {
+	    				SimpleDateFormat form = new SimpleDateFormat("yyyy/MM/DD HH:mm");
+	    				Date d = form.parse((String) ((Vector)a).get(5));
+	    				Date d2 = form.parse((String) ((Vector) b).get(5));
+	    				return d.compareTo(d2);
+	    			} catch (ParseException e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    			}
+	    			 return 0;
+	    		case 3:
+	    			try {
+	    				SimpleDateFormat form = new SimpleDateFormat("yyyy/MM/DD HH:mm");
+	    				Date d = form.parse((String) ((Vector)a).get(5));
+	    				Date d2 = form.parse((String) ((Vector) b).get(5));
+	    				return d2.compareTo(d);
+	    			} catch (ParseException e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    			}
+	    			 return 0;
+	    		case 5://이름
+	    			return a.get(8).toString().compareTo(b.get(8).toString());
+	    		case 6://국적
+	    			return a.get(9).toString().compareTo(b.get(9).toString());
+	    		case 7://룸타입
+	    			return a.get(11).toString().compareTo(b.get(11).toString());
+	    		case 8://룸넘버
+	    			return a.get(12).toString().compareTo(b.get(12).toString());
+	    		case 9://가격
+	    			return b.get(16).toString().compareTo(a.get(16).toString());
+    			default:
+    				return 0;
+	    		}
+	        	
+	        }
 
-	
-	
+	    });
+	}
+
 	
 	//체크박스 컨트롤하는 내부클래스 커스텀 아이템리스터
 	class CheckControl implements ItemListener {
 		@Override
 		public void itemStateChanged(ItemEvent e) {
-			//System.out.println(e.getStateChange()+" "+((JCheckBox)e.getSource()).getName() );
+			System.out.println(e.getStateChange()+" "+((JCheckBox)e.getSource()).getName() );
 			if(((JCheckBox)e.getSource()).getName().equals("all")) {
 				switch(((JCheckBox)e.getSource()).getName()+e.getStateChange()) {
 				case "all1":

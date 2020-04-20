@@ -1,10 +1,17 @@
 package com.koala.view.custom;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.LookAndFeel;
+import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 
 public class Combo extends JComboBox<String> {
 	/**
@@ -14,16 +21,44 @@ public class Combo extends JComboBox<String> {
 	String[] item;
 	DefaultComboBoxModel<String> att;
 	
-	public Combo() {}
+	public Combo() {
+		setUI(new MyComboBoxUI());
+		setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		LineBorder line = new LineBorder(new Color(16753510), 1, true);
+		//srcAtt.setBounds(450, 2, 92, 21);
+		setBorder(line);
+	}
 	
 	public Combo(String filePath) {
+		this();
 		setItem(filePath);
 	}
 	
 	public Combo(String[] att) {
+		this();
 		setItem(att);
 	}
 	
+	public static class MyComboBoxUI extends BasicComboBoxUI {
+		@Override
+	 	protected void installDefaults() {
+            super.installDefaults();
+            //okAndFeel.uninstallBorder(comboBox); //Uninstalls the LAF border for both button and label of combo box.
+        }
+
+        @Override
+        protected JButton createArrowButton() {
+            //Feel free to play with the colors:
+            final Color background = Color.WHITE;    //Default is UIManager.getColor("ComboBox.buttonBackground").
+            
+            final Color triangle = new Color(13041721);              //Default is UIManager.getColor("ComboBox.buttonDarkShadow"). The color of the triangle.
+            final Color highlight = background;               //Default is UIManager.getColor("ComboBox.buttonHighlight"). Another color to show the button as highlighted.
+            final JButton button = new BasicArrowButton(BasicArrowButton.SOUTH, new Color(16773102), new Color(16753510), triangle, highlight);
+            button.setName("ComboBox.arrowButton"); //Mandatory, as per BasicComboBoxUI#createArrowButton().
+            return button;
+        }
+    }
+
 	public void setItem(String[] att) {
 		this.att = new DefaultComboBoxModel<String>(att);
 		setModel(this.att);

@@ -6,6 +6,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JToggleButton;
+import javax.swing.border.LineBorder;
+import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.metal.MetalToggleButtonUI;
 
 public class Toggle extends JToggleButton {
@@ -23,6 +25,9 @@ public class Toggle extends JToggleButton {
 		//= new Color(16764108);
 		lightGray =	new Color(13158600);
 		status = false;
+		setBorder(new LineBorder(new Color(16773102), 1, true));
+		setFocusPainted(false);
+		
 	}
 	
 	public Toggle(String s) {
@@ -45,8 +50,8 @@ public class Toggle extends JToggleButton {
 		setSelected(false);
     	setBackground(lightGray);
     	setForeground(Color.WHITE);
-    	MetalToggleButtonUI ui = new MetalToggleButtonUI() {
-			
+    	
+    	MetalToggleButtonUI ui = new MetalToggleButtonUI() {    				
 		    @Override
 		    protected Color getSelectColor() {
 		        return orange;

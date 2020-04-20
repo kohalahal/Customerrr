@@ -12,6 +12,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	protected Vector<Vector<Object>> dataVector;
     protected Vector<String> columnIdentifiers;
+
     
     public TableModel() {
         dataVector = new Vector<Vector<Object>>();
@@ -22,7 +23,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
     	columnIdentifiers.addElement("퇴실");
       	columnIdentifiers.addElement("입실일");
     	columnIdentifiers.addElement("퇴실일");
-    	columnIdentifiers.addElement("박");
+    	columnIdentifiers.addElement("기간");
     	columnIdentifiers.addElement("호칭");
     	columnIdentifiers.addElement("성함");
     	columnIdentifiers.addElement("국가");
@@ -35,6 +36,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
     	columnIdentifiers.addElement("가격");
       	columnIdentifiers.addElement("지불");
     	fireTableStructureChanged();
+    	
     }
     
     public void setdataVector(Vector<Vector<Object>> dataVector) {
@@ -44,6 +46,7 @@ public class TableModel extends AbstractTableModel implements Serializable {
     	}
     	// System.out.println("테이블바뀜"+dataVector.size());
         fireTableRowsInserted(0, this.dataVector.size());
+
     }
     
     public Vector<Vector<Object>> adddataVector(Vector<Vector<Object>> dataVector) {
@@ -178,4 +181,5 @@ public class TableModel extends AbstractTableModel implements Serializable {
 	public String getColumnName(int column) {
 		return columnIdentifiers.get(column);
 	}
+
 }

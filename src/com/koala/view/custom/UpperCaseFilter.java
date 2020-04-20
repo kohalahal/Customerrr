@@ -19,7 +19,7 @@ public class UpperCaseFilter extends DocumentFilter {
 
   public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
       String text, AttributeSet attr) throws BadLocationException {
-    fb.replace(offset, length, text.toUpperCase(), attr);
+	  fb.replace(offset, length, text.toUpperCase(), attr);
   }
 
   public static void main(String[] args) {

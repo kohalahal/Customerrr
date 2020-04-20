@@ -3,8 +3,10 @@ package com.koala.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -25,12 +27,14 @@ public class Window extends JFrame {
 	
 	public Window() {
 		appName = "고객 관리 시스템";		
-		setBounds(100, 100, 1280, 510);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setPreferredSize(new Dimension(screenSize.width, 620));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setName(appName);
 		frame = (JPanel) getContentPane();
-		frame.setLayout(null);
-		back = new Color(16773102);
+		back = new Color(16577006);
+		String str = "123";
+		System.out.println(str.charAt(0)<'9');
         
 		
 //		mainPanel = new JPanel();
@@ -51,7 +55,7 @@ public class Window extends JFrame {
 //		AppName.setBounds(105, 45, 148, 24);
 //		AppName.setFont(new Font("맑은 고딕", Font.BOLD, 17));
        
-
+		
 		in = new InputField();
 		//in.setBounds(10, 7, 300, 455);
 		//frame.add(in);
@@ -80,32 +84,13 @@ public class Window extends JFrame {
 		//frame.add(table, new Float(1));
 		
 		
-		frame.setLayout(new BorderLayout(5,5));
-		frame.setBorder(new Border() {			
-			@Override
-			public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public boolean isBorderOpaque() {
-				// TODO Auto-generated method stub
-				return false;
-			}
-			
-			@Override
-			public Insets getBorderInsets(Component c) {
-				// TODO Auto-generated method stub
-				return new Insets(5,20,5,20);
-			}
-		});
+		frame.setLayout(new BorderLayout());
+
 		frame.setBackground(back);
 		frame.add(table);
 		frame.add(in, BorderLayout.WEST);
 		pack();
 		setVisible(true);
-		
 		
 		//frame.setLayout(new BorderLayout());
 		//frame.add(in,BorderLayout.WEST);
